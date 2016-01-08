@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">Common</string>
+    <string name="error_runtime">App runtime error</string>
+    <string name="error_io">Io operate error</string>
+    <string name="error_network">Network error</string>
+    <string name="error_parse">Parse data error</string>
+</resources>
