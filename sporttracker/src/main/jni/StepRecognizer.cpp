@@ -11,6 +11,10 @@
 #include <stdlib.h>
 #include <math.h>
 #include <jni.h>
+#include <android/log.h>
+
+#define LOG_TAG "sport_tracker"
+#define  LOGE(...)  __android_log_print(ANDROID_LOG_ERROR,LOG_TAG,__VA_ARGS__)
 
 typedef struct Signal {
     double x;
@@ -344,7 +348,7 @@ int Pedometer(double a, double b, double c) {//flag表示是否记步，如果�
         for (int i = 0; i < L + N; i++) {
             //printf("%f\n",acc_store_origin[i]);
         }
-        //printf("motion:%d\n",motion);
+        LOGE("motion:%d", motion);
         switch (motion) {
             case 1:
                 step += peakInWindow(acc_store_origin, L + N, max_acc_for_walk_hand, valid_size1);
@@ -387,6 +391,7 @@ int Pedometer(double a, double b, double c) {//flag表示是否记步，如果�
                 //printf("%f\n",acc_store[i]);
             }
             motion = motionDetection();
+            LOGE("motion:%d", motion);
             switch (motion) {
                 case 1:
                     step += peakInWindow(acc_store, N + 2, max_acc_for_walk_hand, valid_size1);

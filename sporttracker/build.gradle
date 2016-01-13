@@ -19,15 +19,8 @@ model {
         moduleName = "sport-tracker"
         stl = "stlport_static"
         abiFilters.add("armeabi")
+        ldLibs.addAll(["log"])
     }
-
-//    android.productFlavors {
-//        create("arm") {
-//            ndk.abiFilters.add("armeabi")
-//        }
-//
-//        create("all")
-//    }
 
     android.buildTypes {
         release {

@@ -1,6 +1,5 @@
 package com.example.zhongyu.myapplication;
 
-import android.app.Dialog;
 import android.content.DialogInterface;
 import android.os.Bundle;
 import android.os.Handler;
@@ -13,8 +12,9 @@ import android.widget.EditText;
 import android.widget.TextView;
 
 import com.tulipsport.android.common.logger.Log;
+import com.tulipsport.android.sporttracker.StepListener;
+import com.tulipsport.android.sporttracker.StepSensorManager;
 
-import java.util.HashMap;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 
@@ -139,14 +139,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
                                 String name = editText.getText().toString();
-                                sdCardLogNode.flush(AccelerometerSensorManager.TAG, name);
+                                //sdCardLogNode.flush(AccelerometerSensorManager.TAG, name);
                             }
                         })
                         .setCancelable(true)
                         .setOnCancelListener(new DialogInterface.OnCancelListener() {
                             @Override
                             public void onCancel(DialogInterface dialog) {
-                                sdCardLogNode.clearTag(AccelerometerSensorManager.TAG);
+                                //sdCardLogNode.clearTag(AccelerometerSensorManager.TAG);
                             }
                         })
                         .create();
