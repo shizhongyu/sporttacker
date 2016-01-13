@@ -1,4 +1,4 @@
-package com.example.zhongyu.myapplication;
+package com.tulipsport.android.sporttracker;
 
 /**
  * Created by zhongyu on 12/3/2015.

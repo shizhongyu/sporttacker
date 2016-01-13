@@ -1,4 +1,4 @@
-package com.example.zhongyu.myapplication;
+package com.tulipsport.android.sporttracker;
 /*
  * @description
  *   Please write the AccelerometerSensorManager module's description
@@ -13,8 +13,7 @@ import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
-
-import com.tulipsport.android.common.logger.Log;
+import android.util.Log;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -52,7 +51,7 @@ public class AccelerometerSensorManager implements SensorEventListener {
 
         Sensor mSensor = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
         if (mSensor != null) {
-            sensorManager.registerListener(this, mSensor, SensorManager.SENSOR_DELAY_NORMAL);
+            sensorManager.registerListener(this, mSensor, SensorManager.SENSOR_DELAY_GAME);
             running = true;
         } else {
             Log.e(TAG, "This system don't has the accelerometer sensor!");

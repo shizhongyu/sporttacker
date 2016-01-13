@@ -1,4 +1,4 @@
-package com.example.zhongyu.myapplication;
+package com.tulipsport.android.sporttracker;
 
 /**
  * Created by zhongyu on 12/3/2015.
@@ -12,9 +12,9 @@ import java.util.Arrays;
 import java.util.List;
 
 public class StepSensorManager implements StepListener, IStepDetector {
-    static final int STEP_DETECTOR_MODE_SYSTEM = 1;
-    static final int STEP_DETECTOR_MODE_MOCK = 1 << 1;
-    static final int STEP_DETECTOR_MODE_AUTO = STEP_DETECTOR_MODE_SYSTEM | STEP_DETECTOR_MODE_MOCK;
+    public static final int STEP_DETECTOR_MODE_SYSTEM = 1;
+    public static final int STEP_DETECTOR_MODE_MOCK = 1 << 1;
+    public static final int STEP_DETECTOR_MODE_AUTO = STEP_DETECTOR_MODE_SYSTEM | STEP_DETECTOR_MODE_MOCK;
 
     IStepDetector stepDetector;
     private List<StepListener> stepListeners = new ArrayList<>();
@@ -99,7 +99,8 @@ public class StepSensorManager implements StepListener, IStepDetector {
         // Check that the device supports the step counter and detector sensors
         PackageManager packageManager = cxt.getPackageManager();
         return currentApiVersion >= android.os.Build.VERSION_CODES.KITKAT
-                && packageManager.hasSystemFeature(PackageManager.FEATURE_SENSOR_STEP_COUNTER)
                 && packageManager.hasSystemFeature(PackageManager.FEATURE_SENSOR_STEP_DETECTOR);
+
+        //&& packageManager.hasSystemFeature(PackageManager.FEATURE_SENSOR_STEP_COUNTER)
     }
 }

@@ -1,4 +1,4 @@
-package com.example.zhongyu.myapplication;
+package com.tulipsport.android.sporttracker;
 /*
  * @description
  *   Please write the IStepDetecor module's description

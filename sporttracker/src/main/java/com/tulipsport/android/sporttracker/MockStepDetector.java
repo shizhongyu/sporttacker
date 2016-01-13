@@ -1,4 +1,4 @@
-package com.example.zhongyu.myapplication;
+package com.tulipsport.android.sporttracker;
 /*
  * @description
  *   Please write the MockStepDetector module's description
@@ -55,7 +55,7 @@ public class MockStepDetector implements IStepDetector, SensorEventListener, Ste
 
     @Override
     public void onSensorChanged(SensorEvent event) {
-//        Log.d(TAG, "----" + event.values[0] + "," + event.values[1] + "," + event.values[2]);
+        Log.d(TAG, "----" + event.values[0] + "," + event.values[1] + "," + event.values[2]);
         if (mockStepRecognizer != null) {
             mockStepRecognizer.onSensorChanged(event);
         }
