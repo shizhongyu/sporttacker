@@ -16,19 +16,20 @@
 #define LOG_TAG "sport_tracker"
 #define  LOGE(...)  __android_log_print(ANDROID_LOG_ERROR,LOG_TAG,__VA_ARGS__)
 
+#define printf(...) LOGE(__VA_ARGS__)
+
 typedef struct Signal {
     double x;
     double y;
     double z;
 } Signal;
 
-const int L = 64;
+const int L = 8;
 //必须是2的幂
-const int N = 30;
+const int N = 10;
 //分析窗口，大小为1s中的监测数据
 Signal pre1 = {-9999, -9999, -9999}, pre2 = {-9999, -9999, -9999};
-double rms0[N];
-double rms[2 * L];
+double rms[2 * L], rms0[N];
 //double rms_xy[2*L], rms0_xy[N];//用于判断是否是自动暂停，等红灯原地踏步的
 int signal_index = 0;
 //当前信号指针的位置，与x可用值的数目相关
@@ -51,84 +52,14 @@ int pause_count = 0;
 //int valid_count = 0;//5;
 const double thre_energy_static = 2.0;
 const double thre_variance_static = 1.0;
-const double thre_variance_unregular = 0.9;
+const double thre_variance_unregular = 1.2;
 
-/*
- const double thre_energy_static_xy = 0.001;
- const double thre_energy_for_walk = 0.03;
- const double thre_energy_for_swing = 0.14;
- const double thre_energy_for_run = 5.0;
- 
- 
- const double thre_variance_for_run = 2.0;
- const double thre_variance_for_walk = 0.105;
- const double thre_variance_static_xy = 0.04;
- */
-/*const double max_acc_for_1 = 12;//2.18;
- const double max_acc_for_2 = 2.6;//1.3;
- const double max_acc_for_3 = 1.7;//1.58;//1.58
- const double max_acc_for_4 = 1.4;//1.2;
- const double max_acc_for_5 = 2.0;//1.2;
- const double max_acc_for_6 = 1.7;//1.3;
- const double max_acc_for_7 = 1.6;//1.1;*/
-
-//walk with phone in hand
-/*const double thre_energy_walk_hand_max = 11.0;//5.0;
-const double thre_energy_walk_hand_min = 4.8;//5.0;
-const double thre_variance_walk_hand_min = 2.0;
-const double thre_variance_walk_hand_max = 3.5;//2.0
-const double max_acc_for_walk_hand = 8.5;//8.5;//8.5;
-//walk with phone in pocket
-const double thre_energy_walk_pocket = 2.0;
-const double thre_variance_walk_pocket = 1.0;
-const double max_acc_for_walk_pocket = 20;
-//walk swing
-const double thre_energy_walk_swing_min = 5.0;//4.0;
-const double thre_energy_walk_swing_max = 60.0;//5.3;
-const double thre_variance_walk_swing_min = 1.0;//2.0;
-const double thre_variance_walk_swing_max = 3.5;
-const double max_acc_for_walk_swing = 13.0;//12.0;*/
-
-const double thre_energy_walk_hand_min = 6.0;
-const double thre_energy_walk_hand_max = 12.0;
-const double thre_variance_walk_hand_min = 2.1;
-const double thre_variance_walk_hand_max = 3.3;
-const double max_acc_for_walk_hand = 10.9;//8.5;
-
-const double thre_energy_walk_swing_min = 3.0;
-const double thre_energy_walk_swing_max = 6.0;
-const double max_acc_for_walk_swing = 9.4;
-
-const double thre_energy_walk_pants_min = 12.0;
-const double thre_energy_walk_pants_max = 30.0;
-const double thre_variance_walk_pants_min = 3.0;
-const double thre_variance_walk_pants_max = 8.0;
-const double min_acc_for_walk_pants = 4.8;
-
-const double thre_energy_walk_up_min = 30.0;
-const double thre_energy_walk_up_max = 59.9;
-const double thre_variance_walk_up_min = 3.0;
-const double thre_variance_walk_up_max = 8.0;
-const double min_acc_for_walk_up = 5.0;
-
-
-int valid_size1 = 3;
-int valid_size3 = 4;
-//run swing
-const double thre_energy_run_swing = 100;
-const double thre_variance_run_swing = 9.9;
-const double max_acc_for_run_swing = 20;
-//run pants
-const double thre_energy_run_pocket = 60;
-const double thre_variance_run_pocket = 3.0;
-const double max_acc_for_run_pocket = 25;
-
-int valid_size2 = 0;
 
 void init() {
     //acc = (*Signal)malloc(2*L*sizeof(Signal));
     signal_index = 0;//当前信号指针的位置，与x可用值的数目相关
     analysis_index = 0; //分析方差和标准差窗口的索引
+    signal_num = 0;
     pre1.x = -9999;
     pre1.y = -9999;
     pre1.z = -9999;
@@ -211,13 +142,14 @@ int motionDetection() { // 0 Swing; 1 Phone in hand or backbag
     variance = sqrt(v_value / N);
     //variance_xy = sqrt(v_value_xy/N);
     //printf("%d e:%2f v:%2f\n",signal_num,energy_xy, variance_xy);
-//    printf("e:%2f v:%2f\n", energy, variance);
+    printf("e:%2f v:%2f\n", energy, variance);
     //判断是行走还是静止状态
 
     if (energy <= thre_energy_static && variance <= thre_variance_static) {
         pause_count++;
         if (pause_count == 2) {
             pause_flag = 0;
+            printf("静止\n");
         }
 
         return 0;//静止状态
@@ -229,6 +161,7 @@ int motionDetection() { // 0 Swing; 1 Phone in hand or backbag
     else {
         pause_count = 0;
         if (pause_flag == 0) {
+            printf("Start to Walk again!\n");
             pause_flag = 1;
 
             //runflag = true;
@@ -236,71 +169,24 @@ int motionDetection() { // 0 Swing; 1 Phone in hand or backbag
         else if (pause_flag == 1) {
             pause_flag = 2;
         }
-        if (energy >= thre_energy_run_swing && variance >= thre_variance_run_swing) {
-            return 4;
-        }
-        if (energy >= thre_energy_run_pocket && variance >= thre_variance_run_pocket) {
-            return 5;
-        }
-        if (energy >= thre_energy_walk_up_min && energy <= thre_energy_walk_up_max &&
-            variance >= thre_variance_walk_up_min && variance <= thre_variance_walk_up_max) {
-            return 6;
-        }
+        return 1;
 
-        if (energy >= thre_energy_walk_pants_min && energy <= thre_energy_walk_pants_max &&
-            variance >= thre_variance_walk_pants_min && variance <= thre_variance_walk_pants_max) {
-            return 3;
-        }
-        if (energy >= thre_energy_walk_hand_min && energy <= thre_energy_walk_hand_max &&
-            variance >= thre_variance_walk_hand_min && variance <= thre_variance_walk_hand_max) {
-            return 1;
-        }
-
-
-        if (energy >= thre_energy_walk_swing_min && energy <= thre_energy_walk_swing_max &&
-            variance >= thre_variance_walk_hand_min && variance <= thre_variance_walk_hand_max) {
-            return 2;
-        }
-
-        return 0;
 
     }
 }
 
 /*按峰值记步*/
-int peakInWindow(double a[], int n, double max, int valid_count) {
+int peakInWindow(double a[], int n) {
     int step = 0;
-    int count = 0;
-    //double sum = a[0];
     for (int i = 1; i < n - 1; i++) {
         //sum += a[i];
         //printf("%f\n", a[i]);
-        count++;
-        if (a[i] > a[i + 1] && a[i] > a[i - 1] && a[i] > max && count > valid_count) {
+        //count ++;
+        if (a[i] > a[i + 1] && a[i] > a[i - 1]) {
             step++;
-            count = 0;
         }
     }
-    //sum += a[n-1];
-    //printf("avg: %f \n", sum/n);
-    return step;
-}
-
-int bottomInWindow(double a[], int n, double min, int valid_count) {
-    int step = 0;
-    int count = 0;
-    //double sum = a[0];
-    for (int i = 1; i < n - 1; i++) {
-        //sum += a[i];
-        //printf("%f\n", a[i]);
-        count++;
-        if (a[i] < a[i + 1] && a[i] < a[i - 1] && a[i] < min && count > valid_count) {
-            step++;
-            count = 0;
-        }
-    }
-    //sum += a[n-1];
-    //printf("avg: %f \n", sum/n);
+    printf("step:%d\n", step);
     return step;
 }
 
@@ -348,27 +234,11 @@ int Pedometer(double a, double b, double c) {//flag表示是否记步，如果�
         for (int i = 0; i < L + N; i++) {
             //printf("%f\n",acc_store_origin[i]);
         }
-        LOGE("motion:%d", motion);
+        //printf("motion:%d\n",motion);
         switch (motion) {
             case 1:
-                step += peakInWindow(acc_store_origin, L + N, max_acc_for_walk_hand, valid_size1);
+                step += peakInWindow(acc_store_origin, L + N);
                 break;
-            case 2:
-                step += peakInWindow(acc_store_origin, L + N, max_acc_for_walk_swing, valid_size1);
-                break;
-            case 3:
-                step += bottomInWindow(acc_store_origin, L + N, min_acc_for_walk_pants,
-                                       valid_size3);
-                break;
-            case 4:
-                step += peakInWindow(acc_store_origin, L + N, max_acc_for_run_swing, valid_size2);
-                break;
-            case 5:
-                step += peakInWindow(acc_store_origin, L + N, max_acc_for_run_pocket, valid_size3);
-                break;
-            case 6:
-                step += bottomInWindow(acc_store, N + 2, min_acc_for_walk_up, valid_size3);
-
             default:
                 break;
         }
@@ -391,28 +261,12 @@ int Pedometer(double a, double b, double c) {//flag表示是否记步，如果�
                 //printf("%f\n",acc_store[i]);
             }
             motion = motionDetection();
-            LOGE("motion:%d", motion);
+            printf("motion:%d\n", motion);
             switch (motion) {
                 case 1:
-                    step += peakInWindow(acc_store, N + 2, max_acc_for_walk_hand, valid_size1);
-                    break;
-                case 2:
-                    step += peakInWindow(acc_store, N + 2, max_acc_for_walk_swing, valid_size1);
-                    break;
-                case 3:
-                    step += bottomInWindow(acc_store, N + 2, min_acc_for_walk_pants, valid_size3);
-                    break;
-                case 4:
-                    step += peakInWindow(acc_store, N + 2, max_acc_for_run_swing, valid_size2);
-                    break;
-                case 5:
-                    step += peakInWindow(acc_store, N + 2, max_acc_for_run_pocket, valid_size2);
-                    break;
-                case 6:
-                    step += bottomInWindow(acc_store, N + 2, min_acc_for_walk_up, valid_size3);
+                    step += peakInWindow(acc_store, N + 2);
                     break;
                 default:
-
                     break;
             }
             acc_store[0] = acc_store[N];
@@ -437,16 +291,16 @@ int Pedometer(double a, double b, double c) {//flag表示是否记步，如果�
 }
 
 extern "C" {
-    JNIEXPORT void JNICALL
-    Java_com_tulipsport_android_sporttracker_MockStepDetectorV2_resetStep(JNIEnv *env,
-                                                                          jobject instance) {
-        init();
-    }
+JNIEXPORT void JNICALL
+Java_com_tulipsport_android_sporttracker_MockStepDetectorV2_resetStep(JNIEnv *env,
+                                                                      jobject instance) {
+    init();
+}
 
-    JNIEXPORT jint JNICALL
-    Java_com_tulipsport_android_sporttracker_MockStepDetectorV2_pedometer(JNIEnv *env, jobject instance,
-                                                                          jfloat x, jfloat y,
-                                                                          jfloat z) {
-        return Pedometer(x, y, z);
-    }
+JNIEXPORT jint JNICALL
+Java_com_tulipsport_android_sporttracker_MockStepDetectorV2_pedometer(JNIEnv *env, jobject instance,
+                                                                      jfloat x, jfloat y,
+                                                                      jfloat z) {
+    return Pedometer(x, y, z);
+}
 }
