@@ -12,7 +12,6 @@ import android.content.Context;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
-import android.util.Log;
 
 public class MockStepDetector implements IStepDetector, SensorEventListener, StepListener {
 
@@ -55,7 +54,6 @@ public class MockStepDetector implements IStepDetector, SensorEventListener, Ste
 
     @Override
     public void onSensorChanged(SensorEvent event) {
-        Log.d(TAG, "----" + event.values[0] + "," + event.values[1] + "," + event.values[2]);
         if (mockStepRecognizer != null) {
             mockStepRecognizer.onSensorChanged(event);
         }

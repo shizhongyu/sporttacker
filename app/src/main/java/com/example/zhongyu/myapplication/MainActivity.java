@@ -1,6 +1,8 @@
 package com.example.zhongyu.myapplication;
 
 import android.content.DialogInterface;
+import android.hardware.Sensor;
+import android.hardware.SensorManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -12,15 +14,20 @@ import android.widget.EditText;
 import android.widget.TextView;
 
 import com.tulipsport.android.common.logger.Log;
+import com.tulipsport.android.sporttracker.HeightListener;
+import com.tulipsport.android.sporttracker.HeightSensorManager;
 import com.tulipsport.android.sporttracker.StepListener;
 import com.tulipsport.android.sporttracker.StepSensorManager;
 
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
-
+    private static final String TAG = "MainActivity";
 
     private TextView testData;
     private TextView gyroscope;
+    private TextView tvPressure;
+    private TextView tvAltide;
+    private Sensor sensor = null;
 
     private Button startButton,
             suspendButton,
@@ -32,9 +39,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     private static final int CHANGE = 0X001;
     private static final int CHANGE2 = 0X002;
+    private static final int HEIGHT = 0X003;
+
 
     StepSensorManager stepDetectorSensorManager;
     StepSensorManager mockStepSensorManager;
+    HeightSensorManager heightDectorSensorManager;
+    private SensorManager mSensorManager = null;
 
     SdCardLogNode sdCardLogNode;
 
@@ -48,6 +59,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     break;
                 case CHANGE2:
                     gyroscope.setText("" + msg.arg1);
+                    break;
+                case HEIGHT:
+                    tvPressure.setText(String.valueOf(msg.arg1));
                     break;
             }
         }
@@ -71,6 +85,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private void senSor() {
         stepDetectorSensorManager = new StepSensorManager(MainActivity.this, StepSensorManager.STEP_DETECTOR_MODE_SYSTEM);
         mockStepSensorManager = new StepSensorManager(MainActivity.this, StepSensorManager.STEP_DETECTOR_MODE_MOCK);
+        heightDectorSensorManager = new HeightSensorManager(MainActivity.this, HeightSensorManager.HEIGHT_DETECTOR_MODE_SYSTEM);
 
         stepDetectorSensorManager.addStepListener(new StepListener() {
             @Override
@@ -93,11 +108,24 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 handler.sendMessage(msg);
             }
         });
+
+
+        heightDectorSensorManager.addHeightListener(new HeightListener() {
+            @Override
+            public void onHeight(int height) {
+                Message msg = new Message();
+                msg.what = HEIGHT;
+                msg.arg1 = height;
+                handler.sendMessage(msg);
+            }
+        });
     }
 
     private void init() {
         gyroscope = (TextView) findViewById(R.id.gyroscope);
         testData = (TextView) findViewById(R.id.pedometer);
+        tvPressure = (TextView) findViewById(R.id.pressure);
+        tvAltide = (TextView) findViewById(R.id.atiuade);
         startButton = (Button) findViewById(R.id.start);
         suspendButton = (Button) findViewById(R.id.suspend);
         resetButton = (Button) findViewById(R.id.reset);
@@ -117,18 +145,22 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             case R.id.start:
                 stepDetectorSensorManager.start();
                 mockStepSensorManager.start();
+                heightDectorSensorManager.start();
                 sdCardLogNode.start();
                 break;
             case R.id.suspend:
                 stepDetectorSensorManager.stop();
                 mockStepSensorManager.stop();
+                heightDectorSensorManager.stop();
                 sdCardLogNode.stop();
                 break;
             case R.id.finish:
                 stepDetectorSensorManager.stop();
                 mockStepSensorManager.stop();
+                heightDectorSensorManager.stop();
                 stepDetectorSensorManager.reset();
                 mockStepSensorManager.reset();
+                heightDectorSensorManager.reset();
                 sdCardLogNode.stop();
 
                 final EditText editText = new EditText(this);
@@ -156,14 +188,36 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 count = 0;
                 count2 = 0;
 
+
                 stepDetectorSensorManager.reset();
                 mockStepSensorManager.reset();
-
+                heightDectorSensorManager.reset();
                 testData.setText("0");
                 gyroscope.setText("0");
+                tvPressure.setText("0");
                 break;
             default:
                 break;
         }
     }
+
+
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

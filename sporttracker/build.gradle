@@ -18,7 +18,7 @@ model {
     android.ndk {
         moduleName = "sport-tracker"
         stl = "stlport_static"
-        abiFilters.add("armeabi")
+        //abiFilters.add("armeabi")
         ldLibs.addAll(["log"])
     }
 
